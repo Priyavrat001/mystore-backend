@@ -13,7 +13,7 @@ app.get("/", (req, res) => {
     res.send("api is working just fine.");
 });
 // using routes
-app.use("/api/v1", userRoute);
+app.use("/api/v1/user", userRoute);
 // error handling middleware
 app.use(errorMiddleware);
 app.listen(port, () => {
