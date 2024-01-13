@@ -3,7 +3,55 @@ import { Product } from "../models/product.js";
 import ErrorHandler from "../utils/utility-class.js";
 import { rm } from "fs";
 import dotenv from "dotenv";
+import { nodeCache } from "../app.js";
+import { invalidateCache } from "../utils/revalidate.js";
 dotenv.config();
+export const getLetestProducts = TryCatch(async (req, res, next) => {
+    let product = [];
+    if (nodeCache.has("letest-product"))
+        product = JSON.parse(nodeCache.get("letest-product"));
+    else {
+        product = await Product.find({}).sort({ createdAt: -1 }).limit(5);
+        nodeCache.set("letest-product", JSON.stringify(product));
+    }
+    return res.status(200).json({ success: true, product });
+});
+export const getAllCategory = TryCatch(async (req, res, next) => {
+    let category;
+    if (nodeCache.has("category"))
+        category = JSON.parse(nodeCache.get("category"));
+    else {
+        category = await Product.distinct("category");
+        nodeCache.set("category", JSON.stringify(category));
+    }
+    return res.status(200).json({ success: true, category });
+});
+export const getAdminProducts = TryCatch(async (req, res, next) => {
+    let product;
+    if (nodeCache.has("all-product"))
+        product = JSON.parse(nodeCache.get("all-product"));
+    else {
+        product = await Product.find({});
+        nodeCache.set("all-product", JSON.stringify(product));
+    }
+    return res.status(200).json({ success: true, product });
+});
+export const getSingleProduct = TryCatch(async (req, res, next) => {
+    let product;
+    const id = req.params.id;
+    if (nodeCache.has(`product-${id}`))
+        product = JSON.parse(nodeCache.get(`product-${id}`));
+    else {
+        product = await Product.findById(id);
+        if (!product)
+            return next(new ErrorHandler("Product Not Found", 404));
+        nodeCache.set(`product-${id}`, JSON.stringify(product));
+    }
+    return res.status(200).json({
+        success: true,
+        product,
+    });
+});
 export const createProduct = TryCatch(async (req, res, next) => {
     const { name, stock, category, price } = req.body;
     const photo = req.file;
@@ -18,26 +66,8 @@ export const createProduct = TryCatch(async (req, res, next) => {
     const product = await Product.create({
         name, photo: photo?.path, stock, price, category: category.toLowerCase()
     });
+    await invalidateCache({ product: true });
     return res.status(200).json({ success: true, message: "Product created successfully." });
-});
-export const getLetestProducts = TryCatch(async (req, res, next) => {
-    const product = await Product.find({}).sort({ createdAt: -1 }).limit(5);
-    return res.status(200).json({ success: true, product });
-});
-export const getAllCategory = TryCatch(async (req, res, next) => {
-    const category = await Product.distinct("category");
-    return res.status(200).json({ success: true, category });
-});
-export const getAdminProducts = TryCatch(async (req, res, next) => {
-    const product = await Product.find({});
-    return res.status(200).json({ success: true, product });
-});
-export const getSingleProduct = TryCatch(async (req, res, next) => {
-    const id = req.params.id;
-    const product = await Product.findById(id);
-    if (!product)
-        return next(new ErrorHandler("Product not found.", 404));
-    return res.status(200).json({ success: true, product });
 });
 export const updateProduct = TryCatch(async (req, res, next) => {
     const { id } = req.params;

@@ -1,12 +1,14 @@
 import express from 'express';
 import connectToMongo from "./utils/DataBase.js";
 import { errorMiddleware } from './middlewares/error.js';
+import NodeCache from "node-cache";
 // importing all routes
 import userRoute from "./routes/user.js";
 import productRoute from "./routes/product.js";
 const port = 4000;
 const app = express();
 connectToMongo();
+export const nodeCache = new NodeCache();
 // using the middleware express.json
 app.use(express.json());
 // using routes

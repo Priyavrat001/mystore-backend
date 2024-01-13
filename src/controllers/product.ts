@@ -5,7 +5,78 @@ import { BaseQuery, NewProductRequestBody, SearchRequestQuery } from "../types/t
 import ErrorHandler from "../utils/utility-class.js";
 import { rm } from "fs";
 import dotenv from "dotenv";
-dotenv.config()
+import { nodeCache } from "../app.js";
+import { invalidateCache } from "../utils/revalidate.js";
+
+dotenv.config();
+
+export const getLetestProducts = TryCatch(async (req, res, next) => {
+
+  let product = [];
+
+  if (nodeCache.has("letest-product")) product = JSON.parse(nodeCache.get("letest-product") as string);
+  else {
+
+    product = await Product.find({}).sort({ createdAt: -1 }).limit(5);
+
+    nodeCache.set("letest-product", JSON.stringify(product));
+  }
+
+
+  return res.status(200).json({ success: true, product });
+});
+
+
+export const getAllCategory = TryCatch(async (req, res, next) => {
+
+  let category;
+
+  if(nodeCache.has("category")) category = JSON.parse(nodeCache.get("category") as string);
+  else{
+    
+    category = await Product.distinct("category");
+    nodeCache.set("category", JSON.stringify(category));
+  }
+
+
+  return res.status(200).json({ success: true, category });
+});
+
+export const getAdminProducts = TryCatch(async (req, res, next) => {
+  let product;
+  if(nodeCache.has("all-product")) product = JSON.parse(nodeCache.get("all-product") as string);
+  else{
+  
+    product = await Product.find({});
+    nodeCache.set("all-product", JSON.stringify(product))
+
+  }
+
+
+  return res.status(200).json({ success: true, product });
+});
+
+export const getSingleProduct = TryCatch(async (req, res, next) => {
+
+  let product;
+  const id = req.params.id;
+  if (nodeCache.has(`product-${id}`))
+    product = JSON.parse(nodeCache.get(`product-${id}`) as string);
+  else {
+    product = await Product.findById(id);
+
+    if (!product) return next(new ErrorHandler("Product Not Found", 404));
+
+    nodeCache.set(`product-${id}`, JSON.stringify(product));
+  }
+
+  return res.status(200).json({
+    success: true,
+    product,
+  });
+
+});
+
 
 export const createProduct = TryCatch(async (req: Request<{}, {}, NewProductRequestBody>, res, next) => {
 
@@ -27,42 +98,10 @@ export const createProduct = TryCatch(async (req: Request<{}, {}, NewProductRequ
     name, photo: photo?.path, stock, price, category: category.toLowerCase()
   });
 
+  await invalidateCache({product:true});
+
   return res.status(200).json({ success: true, message: "Product created successfully." });
 });
-
-
-export const getLetestProducts = TryCatch(async (req, res, next) => {
-
-  const product = await Product.find({}).sort({ createdAt: -1 }).limit(5);
-
-  return res.status(200).json({ success: true, product });
-});
-
-
-export const getAllCategory = TryCatch(async (req, res, next) => {
-
-  const category = await Product.distinct("category");
-
-  return res.status(200).json({ success: true, category });
-});
-
-export const getAdminProducts = TryCatch(async (req, res, next) => {
-
-  const product = await Product.find({});
-
-  return res.status(200).json({ success: true, product });
-});
-
-export const getSingleProduct = TryCatch(async (req, res, next) => {
-
-  const id = req.params.id
-
-  const product = await Product.findById(id);
-  if (!product) return next(new ErrorHandler("Product not found.", 404))
-
-  return res.status(200).json({ success: true, product });
-});
-
 
 export const updateProduct = TryCatch(async (req, res, next) => {
   const { id } = req.params;
@@ -118,24 +157,24 @@ export const searchAllProduct = TryCatch(async (req: Request<{}, {}, {}, SearchR
 
   const skip = (page - 1) * limit;
 
-  const baseQuery : BaseQuery = {
- 
+  const baseQuery: BaseQuery = {
+
   }
-  if(search){
+  if (search) {
     baseQuery.name = {
       $regex: search,
       $options: "i"
     }
   }
-  if(price){
-    baseQuery.price={
+  if (price) {
+    baseQuery.price = {
       $lte: Number(price),
     }
   }
 
-  if(category) baseQuery.category= category;
+  if (category) baseQuery.category = category;
 
-  const productPromise = Product.find(baseQuery).sort(sort && {price: sort==="asc"? 1: -1}).limit(limit).skip(skip);
+  const productPromise = Product.find(baseQuery).sort(sort && { price: sort === "asc" ? 1 : -1 }).limit(limit).skip(skip);
 
   const [product, filterProduct] = await Promise.all([
     productPromise,
