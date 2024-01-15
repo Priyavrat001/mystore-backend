@@ -2,18 +2,24 @@ import express from 'express';
 import connectToMongo from "./utils/DataBase.js";
 import { errorMiddleware } from './middlewares/error.js';
 import NodeCache from "node-cache";
+import { config } from "dotenv";
+import morgan from 'morgan';
 // importing all routes
 import userRoute from "./routes/user.js";
 import productRoute from "./routes/product.js";
-const port = 4000;
+import orderRoute from "./routes/order.js";
+config();
+const port = process.env.PORT;
 const app = express();
 connectToMongo();
 export const nodeCache = new NodeCache();
 // using the middleware express.json
 app.use(express.json());
+app.use(morgan("dev"));
 // using routes
 app.use("/api/v1/user", userRoute);
 app.use("/api/v1/product", productRoute);
+app.use("/api/v1/order", orderRoute);
 // error handling middleware
 app.use("/uploads", express.static("uploads"));
 app.use(errorMiddleware);
