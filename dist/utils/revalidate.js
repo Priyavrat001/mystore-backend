@@ -3,8 +3,14 @@ import { Product } from "../models/product.js";
 import { Order } from "../models/order.js";
 export const invalidateCache = async ({ product, order, admin, userId, orderId, productId }) => {
     if (product) {
-        const productKeys = ["latest-product", "category", 'product', "all-product", `product-${productId}`];
+        const productKeys = ["latest-product", "category", 'product', "all-product"];
         const products = await Product.find({}).select("_id");
+        if (typeof productId === "string")
+            productKeys.push(`product-${productId}`);
+        if (typeof productId === "object")
+            productId.forEach((i) => {
+                productKeys.push(`product-${i}`);
+            });
         nodeCache.del(productKeys);
     }
     if (order) {

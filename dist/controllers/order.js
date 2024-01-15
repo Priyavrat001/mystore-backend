@@ -51,15 +51,28 @@ export const getSingleOrder = TryCatch(async (req, res, next) => {
     });
 });
 export const createOrder = TryCatch(async (req, res, next) => {
-    const { shippingInfo, orderItems, user, subtotal, tax, shippingCharges, discount, total } = req.body;
+    const { shippingInfo, orderItems, user, subtotal, tax, shippingCharges, discount, total, } = req.body;
     if (!shippingInfo || !orderItems || !user || !subtotal || !tax || !total)
-        return next(new ErrorHandler("Please enter order", 400));
+        return next(new ErrorHandler("Please Enter All Fields", 400));
     const order = await Order.create({
-        shippingInfo, orderItems, user, subtotal, tax, shippingCharges, discount, total
+        shippingInfo,
+        orderItems,
+        user,
+        subtotal,
+        tax,
+        shippingCharges,
+        discount,
+        total,
     });
     await reduceStock(orderItems);
-    invalidateCache({ product: true, order: true, admin: true, userId: user });
-    res.status(200).json({ success: true, message: "Order created successfully", order });
+    invalidateCache({
+        product: true,
+        order: true,
+        admin: true,
+        userId: user,
+        productId: order.orderItems.map((i) => String(i.productId)),
+    });
+    res.status(200).json({ success: true, message: "Order created successfully" });
 });
 export const processOrder = TryCatch(async (req, res, next) => {
     const { id } = req.params;
