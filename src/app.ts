@@ -7,7 +7,9 @@ import morgan from 'morgan';
 // importing all routes
 import userRoute from "./routes/user.js";
 import productRoute from "./routes/product.js";
-import orderRoute from "./routes/order.js"
+import orderRoute from "./routes/order.js";
+import paymentRoute from "./routes/payment.js";
+import statsRoute from "./routes/stats.js";
 
 config()
 
@@ -26,6 +28,8 @@ app.use(morgan("dev"));
 app.use("/api/v1/user", userRoute);
 app.use("/api/v1/product", productRoute);
 app.use("/api/v1/order", orderRoute);
+app.use("/api/v1/payment", paymentRoute);
+app.use("/api/v1/dashboard", statsRoute);
 
 // error handling middleware
 app.use("/uploads", express.static("uploads"));
