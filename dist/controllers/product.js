@@ -6,15 +6,18 @@ import dotenv from "dotenv";
 import { nodeCache } from "../app.js";
 import { invalidateCache } from "../utils/revalidate.js";
 dotenv.config();
-export const getLetestProducts = TryCatch(async (req, res, next) => {
-    let product = [];
-    if (nodeCache.has("letest-product"))
-        product = JSON.parse(nodeCache.get("letest-product"));
+export const getlatestProducts = TryCatch(async (req, res, next) => {
+    let products;
+    if (nodeCache.has("latest-products"))
+        products = JSON.parse(nodeCache.get("latest-products"));
     else {
-        product = await Product.find({}).sort({ createdAt: -1 }).limit(5);
-        nodeCache.set("letest-product", JSON.stringify(product));
+        products = await Product.find({}).sort({ createdAt: -1 }).limit(5);
+        nodeCache.set("latest-products", JSON.stringify(products));
     }
-    return res.status(200).json({ success: true, product });
+    return res.status(200).json({
+        success: true,
+        products,
+    });
 });
 export const getAllCategory = TryCatch(async (req, res, next) => {
     let category;
