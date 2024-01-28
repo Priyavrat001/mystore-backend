@@ -12,7 +12,7 @@ app.get("/all", searchAllProduct);
 // Get products category---> api/v1/product/category
 app.get("/category", getAllCategory);
 // Get admin products---> api/v1/product/admin-product
-app.get("/admin-product", getAdminProducts);
+app.get("/admin-product", adminOnly, getAdminProducts);
 // Delete upadate (admin only) and get route by id---> api/v1/product/:id
 app.route("/:id").get(getSingleProduct).put(adminOnly, singleUpload, updateProduct).delete(adminOnly, deleteProduct);
 export default app;

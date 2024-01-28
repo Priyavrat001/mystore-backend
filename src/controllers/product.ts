@@ -43,17 +43,17 @@ export const getAllCategory = TryCatch(async (req, res, next) => {
 });
 
 export const getAdminProducts = TryCatch(async (req, res, next) => {
-  let product;
-  if(nodeCache.has("all-product")) product = JSON.parse(nodeCache.get("all-product") as string);
+  let products;
+  if(nodeCache.has("all-product")) products = JSON.parse(nodeCache.get("all-product") as string);
   else{
   
-    product = await Product.find({});
-    nodeCache.set("all-product", JSON.stringify(product))
+    products = await Product.find({});
+    nodeCache.set("all-product", JSON.stringify(products))
 
   }
 
 
-  return res.status(200).json({ success: true, product });
+  return res.status(200).json({ success: true, products });
 });
 
 export const getSingleProduct = TryCatch(async (req, res, next) => {
@@ -180,12 +180,12 @@ export const searchAllProduct = TryCatch(async (req: Request<{}, {}, {}, SearchR
 
   const productPromise = Product.find(baseQuery).sort(sort && { price: sort === "asc" ? 1 : -1 }).limit(limit).skip(skip);
 
-  const [product, filterProduct] = await Promise.all([
+  const [products, filterProduct] = await Promise.all([
     productPromise,
     Product.find(baseQuery)
   ]);
 
   const totalPage = Math.ceil(filterProduct.length / limit);
 
-  return res.status(200).json({ success: true, product, totalPage });
+  return res.status(200).json({ success: true, products, totalPage });
 });

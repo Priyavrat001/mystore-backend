@@ -19,7 +19,7 @@ app.get("/all", searchAllProduct);
 app.get("/category", getAllCategory);
 
 // Get admin products---> api/v1/product/admin-product
-app.get("/admin-product", getAdminProducts);
+app.get("/admin-product",adminOnly, getAdminProducts);
 
 // Delete upadate (admin only) and get route by id---> api/v1/product/:id
 app.route("/:id").get(getSingleProduct).put(adminOnly, singleUpload, updateProduct).delete(adminOnly, deleteProduct);
