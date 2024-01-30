@@ -13,7 +13,7 @@ export const invalidateCache = async({
     productId
 }: InvalidateCacheProps)=>{
     if(product){
-        const productKeys: string[] = ["latest-product", "category", 'product', "all-product"]
+        const productKeys: string[] = ["latest-products", "category", 'product', "all-product"]
 
         const products = await Product.find({}).select("_id");
         
