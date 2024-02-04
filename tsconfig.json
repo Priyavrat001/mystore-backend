@@ -6,5 +6,7 @@
     "moduleResolution": "NodeNext",
     "outDir": "dist",
     "strict": true
-  }
+  },
+  "exclude": ["node_module"],
+  "include": ["./src/**/*.ts"]
 }
