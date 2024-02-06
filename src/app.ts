@@ -22,7 +22,7 @@ connectToMongo();
 const stripeKey = process.env.STRIPE_KEY
 
 export const nodeCache = new NodeCache();
-export const stripe = new Stripe(stripeKey);
+export const stripe = new Stripe(stripeKey!);
 
 // using the middleware
 app.use(express.json());

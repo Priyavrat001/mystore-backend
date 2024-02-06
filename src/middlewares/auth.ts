@@ -9,11 +9,11 @@ export const adminOnly = TryCatch(async(req, res, next)=>{
 
     if(!id) return next(new ErrorHandler("Invalid id please login first.", 400));
 
-    const user = User.findById(id);
+    const user = await User.findById(id!);
 
     if(!user) return next(new ErrorHandler("Invalid id", 401));
 
-    if((await user).role !== "admin") return next(new ErrorHandler("Not allowed for the user to access this data.", 401));
+    if((user).role !== "admin") return next(new ErrorHandler("Not allowed for the user to access this data.", 401));
 
     next();
 

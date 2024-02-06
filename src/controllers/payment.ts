@@ -2,9 +2,12 @@ import { stripe } from "../app.js";
 import { TryCatch } from "../middlewares/error.js";
 import { Coupon } from "../models/coupon.js";
 import ErrorHandler from "../utils/utility-class.js";
+import { Request, Response, NextFunction } from 'express';
 
 
-export const createPaymentIntent = TryCatch(async (req, res, next) => {
+export const createPaymentIntent = TryCatch(async (req: Request,
+    res: Response,
+    next: NextFunction) => {
     const { amount } = req.body;
 
 
@@ -63,7 +66,7 @@ export const deleteCoupon = TryCatch(async (req, res, next) => {
     const { id } = req.params
 
     const coupon = await Coupon.findById(id);
-    await coupon.deleteOne();
+    await coupon!.deleteOne();
 
     return res.status(201).json({
         success: true, message: "Coupon deleted successfully"
